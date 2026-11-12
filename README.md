@@ -1,7 +1,7 @@
 # Default Apps for Omarchy
 
 A native Omarchy bar panel for choosing your default browser, editor,
-terminal, and coding agent. Uses Omarchy's themed controls and follows the
+terminal, coding agent, and file manager. Uses Omarchy's themed controls and follows the
 active shell theme. Defaults change only when you select an application.
 
 ![Default Apps panel with browser, editor, terminal, and coding agent selectors](preview.png)
@@ -9,7 +9,7 @@ active shell theme. Defaults change only when you select an application.
 ## Requirements
 
 Omarchy Quattro with its Quickshell plugin system, the shared `qs.Ui`
-components, `omarchy default browser/editor/terminal/agent`, and Python 3.
+components, `omarchy default browser/editor/terminal/agent`, Python 3, and xdg-utils.
 Older Waybar-based Omarchy releases are not supported.
 
 ## Install
@@ -39,7 +39,8 @@ and Escape closes it.
   does not call the setter that would install or launch an agent.
 - Choices are supported commands found on PATH. Agent launcher wrappers may
   appear even when their underlying runtime has not been installed.
-- Flatpak-only applications and custom desktop entries are not supported.
+- Browser/editor/terminal choices do not support Flatpak-only applications or custom entries. File managers are discovered from XDG desktop entries advertising `inode/directory`, including custom entries.
+- File-manager selection changes only the folder association; existing keyboard shortcuts remain untouched.
 - This initial release has been tried locally. Broader theme, scaling, and
   multi-monitor coverage is still limited.
 
@@ -72,3 +73,22 @@ plugin removal command before installing the Git-managed version.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Optional file-manager shortcuts
+
+Omarchy's stock Super+Shift+F and Super+Alt+Shift+F shortcuts launch Nautilus.
+To make them follow the folder default, first inspect your existing bindings
+with `omarchy menu keybindings --print`. If you want to replace them, add the
+following to `~/.config/hypr/bindings.lua` (back up that file first):
+
+```lua
+hl.unbind("SUPER + SHIFT + F")
+o.bind("SUPER + SHIFT + F", "Default file manager", [[xdg-open "$HOME"]])
+hl.unbind("SUPER + ALT + SHIFT + F")
+o.bind("SUPER + ALT + SHIFT + F", "Default file manager (cwd)", [[xdg-open "$(omarchy-cmd-terminal-cwd)"]])
+```
+
+Run `hyprctl reload` and `hyprctl configerrors` after editing. These optional
+bindings replace any custom actions on those keys. The plugin never edits
+Hyprland configuration. To undo, remove the added bindings and restore your
+backup. The preview currently shows the earlier four-category panel.

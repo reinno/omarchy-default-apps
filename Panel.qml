@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls as Controls
 import Quickshell
 import Quickshell.Io
 import qs.Ui
@@ -54,9 +55,14 @@ Panel {
         contentWidth: popup.fittedContentWidth(Style.space(360))
         contentHeight: popup.fittedContentHeight(content.implicitHeight, Style.space(520))
         focusTarget: content
-        Column {
+        Controls.ScrollView {
+            id: scroll
+            anchors.fill: parent
+            clip: true
+            contentWidth: availableWidth
+            Column {
             id: content
-            width: parent.width
+            width: scroll.availableWidth
             spacing: Style.space(14)
             Keys.onEscapePressed: root.close()
             PanelHero {
@@ -120,6 +126,7 @@ Panel {
                 wrapMode: Text.Wrap
             }
 
+            }
         }
     }
 }

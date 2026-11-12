@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Small argv-only adapter to Omarchy's default-app commands."""
+import configparser
 import json
 import os
 from pathlib import Path
@@ -41,16 +42,56 @@ def set_agent(app):
         if name and os.path.exists(name):
             os.unlink(name)
 
+def file_managers():
+    """Discover directory handlers, honoring XDG desktop-file overrides."""
+    roots = [Path(os.environ.get('XDG_DATA_HOME', str(Path.home() / '.local/share')))]
+    roots += [Path(x) for x in os.environ.get('XDG_DATA_DIRS', '/usr/local/share:/usr/share').split(':') if x]
+    seen, result = set(), []
+    for root in roots:
+        folder = root / 'applications'
+        for path in sorted(folder.rglob('*.desktop')) if folder.is_dir() else []:
+            desktop_id = str(path.relative_to(folder)).replace('/', '-')
+            if desktop_id in seen:
+                continue
+            seen.add(desktop_id)
+            config = configparser.ConfigParser(interpolation=None, strict=False)
+            try:
+                config.read(path, encoding='utf-8')
+                entry = config['Desktop Entry']
+                if entry.get('Type') != 'Application' or entry.get('Hidden', '').lower() == 'true':
+                    continue
+                if 'inode/directory' not in entry.get('MimeType', '').split(';'):
+                    continue
+                if not entry.get('Exec') or (entry.get('TryExec') and not shutil.which(entry['TryExec'])):
+                    continue
+                result.append(dict(value=desktop_id, label=entry.get('Name', desktop_id)))
+            except (OSError, UnicodeError, configparser.Error, KeyError):
+                continue
+    return sorted(result, key=lambda row: (row['label'].casefold(), row['value']))
+
+
+def directory_default(app=None):
+    command = ['xdg-mime', 'default', app, 'inode/directory'] if app else ['xdg-mime', 'query', 'default', 'inode/directory']
+    result = subprocess.run(command, check=True, capture_output=True, text=True, timeout=15).stdout.strip()
+    if app and directory_default() != app:
+        raise ValueError('The desktop did not accept the selected folder default')
+    return result
+
+
 def main(args):
     if args:
-        if len(args) != 2 or args[0] not in APPS:
+        if len(args) != 2 or args[0] not in (*APPS, 'file manager'):
             raise ValueError('Expected a category and application')
         category, app = args
-        if not any(row[0] == app and available(row) for row in APPS[category]):
+        if category == 'file manager':
+            if app not in [row['value'] for row in file_managers()]:
+                raise ValueError('Application is not an available directory handler')
+            directory_default(app)
+        elif not any(row[0] == app and available(row) for row in APPS[category]):
             raise ValueError('Application is unsupported or not installed')
         if category == 'agent':
             set_agent(app)
-        else:
+        elif category != 'file manager':
             run(category, app)
     result = []
     for category, apps in APPS.items():
@@ -59,6 +100,7 @@ def main(args):
             current = 'zed'
         result.append(dict(category=category, current=current,
                            apps=[dict(value=r[0], label=r[1]) for r in apps if available(r)]))
+    result.append(dict(category='file manager', current=directory_default(), apps=file_managers()))
     print(json.dumps(result))
 
 if __name__ == '__main__':
