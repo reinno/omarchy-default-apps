@@ -1,8 +1,8 @@
 # Default Apps for Omarchy
 
 A native shell bar popup for switching the default browser, editor, and
-terminal using Omarchy's own `omarchy default` commands. Shows current
-defaults and offers supported applications found on PATH. Changes apply
+terminal, and coding agent using Omarchy's own `omarchy default` commands. Shows current
+defaults and offers supported applications found on PATH. Agent choices are commands available on PATH (including launcher wrappers). Selecting an agent only saves the preference; it does not install or launch it. Changes apply
 immediately when selected. Open the panel again or click Refresh to detect
 external changes.
 

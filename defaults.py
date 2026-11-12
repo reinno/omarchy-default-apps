@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
 """Small argv-only adapter to Omarchy's default-app commands."""
 import json
+import os
+from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tempfile
 
 APPS = {
     'browser': [('chromium', 'Chromium', 'chromium'), ('chrome', 'Chrome', 'google-chrome-stable'), ('brave', 'Brave', 'brave'), ('brave-origin', 'Brave Origin', 'brave-origin'), ('edge', 'Edge', 'microsoft-edge-stable'), ('firefox', 'Firefox', 'firefox'), ('zen', 'Zen', 'zen-browser')],
     'editor': [('code', 'VS Code', 'code'), ('cursor', 'Cursor', 'cursor'), ('zed', 'Zed', 'zeditor'), ('sublime_text', 'Sublime Text', 'sublime_text'), ('helix', 'Helix', 'hx'), ('vim', 'Vim', 'vim'), ('emacs', 'Emacs', 'emacs'), ('nvim', 'Neovim', 'nvim')],
     'terminal': [(x, x.title(), x) for x in ('alacritty', 'foot', 'ghostty', 'kitty')],
+    'agent': [(value, label, value) for value, label in (
+        ('pi', 'Pi'), ('omp', 'Oh My Pi'), ('opencode', 'OpenCode'),
+        ('claude', 'Claude Code'), ('codex', 'Codex'), ('grok', 'Grok'),
+        ('gemini', 'Gemini'), ('openclaw', 'OpenClaw'), ('hermes', 'Hermes'),
+        ('copilot', 'GitHub Copilot'), ('crush', 'Crush'),
+        ('cursor-agent', 'Cursor CLI'), ('muse', 'Muse Code'))],
 }
 
 def run(*args):
@@ -17,6 +26,21 @@ def run(*args):
 def available(row):
     return bool(shutil.which(row[2]))
 
+def set_agent(app):
+    # Match omarchy-default-agent's path. Its setter installs and launches;
+    # this panel only changes the saved preference.
+    target = Path.home() / '.config/omarchy/defaults/agent'
+    target.parent.mkdir(parents=True, exist_ok=True)
+    name = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', dir=target.parent, delete=False) as out:
+            name = out.name
+            out.write(app + '\n')
+        os.replace(name, target)
+    finally:
+        if name and os.path.exists(name):
+            os.unlink(name)
+
 def main(args):
     if args:
         if len(args) != 2 or args[0] not in APPS:
@@ -24,7 +48,10 @@ def main(args):
         category, app = args
         if not any(row[0] == app and available(row) for row in APPS[category]):
             raise ValueError('Application is unsupported or not installed')
-        run(category, app)
+        if category == 'agent':
+            set_agent(app)
+        else:
+            run(category, app)
     result = []
     for category, apps in APPS.items():
         current = run(category)
