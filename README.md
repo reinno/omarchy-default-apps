@@ -4,7 +4,7 @@ A native Omarchy bar panel for choosing your default browser, editor,
 terminal, coding agent, and file manager. Uses Omarchy's themed controls and follows the
 active shell theme. Defaults change only when you select an application.
 
-![Default Apps panel with browser, editor, terminal, and coding agent selectors](preview.png)
+![Default Apps panel with five app categories](preview.png)
 
 ## Requirements
 
@@ -91,9 +91,11 @@ o.bind("SUPER + ALT + SHIFT + F", "Default file manager (cwd)", [[xdg-open "$(om
 Run `hyprctl reload` and `hyprctl configerrors` after editing. These optional
 bindings replace any custom actions on those keys. The plugin never edits
 Hyprland configuration. To undo, remove the added bindings and restore your
-backup. The preview currently shows the earlier four-category panel.
+backup.
 
 ## Choose visible categories
+
+![Visible categories settings panel](settings-preview.png)
 
 Click the settings icon in the panel header to open **Visible categories**.
 Toggle categories there; changes save immediately. Use the back arrow or
