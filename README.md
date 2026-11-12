@@ -4,6 +4,8 @@ A native Omarchy bar panel for choosing your default browser, editor,
 terminal, and coding agent. Uses Omarchy's themed controls and follows the
 active shell theme. Defaults change only when you select an application.
 
+![Default Apps panel with browser, editor, terminal, and coding agent selectors](preview.png)
+
 ## Requirements
 
 Omarchy Quattro with its Quickshell plugin system, the shared `qs.Ui`
