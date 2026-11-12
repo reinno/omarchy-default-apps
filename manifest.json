@@ -5,7 +5,17 @@
   "version": "0.1.0",
   "author": "reinno",
   "description": "Switch the default browser, editor, terminal, and coding agent.",
-  "kinds": ["bar-widget"],
-  "entryPoints": {"barWidget": "Panel.qml"},
-  "barWidget": {"displayName": "Default Apps", "category": "System", "defaultSection": "right", "allowMultiple": false}
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Default Apps",
+    "category": "System",
+    "defaultSection": "right",
+    "allowMultiple": false
+  },
+  "license": "MIT"
 }

@@ -1,42 +1,72 @@
 # Default Apps for Omarchy
 
-A native shell bar popup for switching the default browser, editor, and
-terminal, and coding agent using Omarchy's own `omarchy default` commands. Shows current
-defaults and offers supported applications found on PATH. Agent choices are commands available on PATH (including launcher wrappers). Selecting an agent only saves the preference; it does not install or launch it. Changes apply
-immediately when selected. Open the panel again or click Refresh to detect
-external changes.
+A native Omarchy bar panel for choosing your default browser, editor,
+terminal, and coding agent. Uses Omarchy's themed controls and follows the
+active shell theme. Defaults change only when you select an application.
 
-Requires the Omarchy Quickshell plugin system and Python 3. Editor selection
-controls `omarchy launch editor`; it does not change every document MIME
-association. Browser and terminal behavior follows the installed Omarchy
-commands. Flatpak-only applications and custom desktop entries are not yet
-supported.
+## Requirements
+
+Omarchy Quattro with its Quickshell plugin system, the shared `qs.Ui`
+components, `omarchy default browser/editor/terminal/agent`, and Python 3.
+Older Waybar-based Omarchy releases are not supported.
 
 ## Install
 
-From this directory:
+```sh
+omarchy plugin add https://github.com/reinno/omarchy-default-apps --enable
+```
+
+Click the settings icon in the bar. To move it:
 
 ```sh
+omarchy bar move reinno.default-apps --section right
+```
+
+Reopen the panel or use its refresh icon to detect external changes.
+Tab focuses controls; Enter opens a dropdown, arrow keys choose an option,
+and Escape closes it.
+
+## Behavior and limitations
+
+- Browser and terminal selections use Omarchy's default commands and their
+  configuration behavior. The terminal command replaces the terminal
+  preference list with the selected terminal.
+- Editor selection controls `omarchy launch editor`, not every document
+  MIME association.
+- Agent selection writes `~/.config/omarchy/defaults/agent` atomically. It
+  does not call the setter that would install or launch an agent.
+- Choices are supported commands found on PATH. Agent launcher wrappers may
+  appear even when their underlying runtime has not been installed.
+- Flatpak-only applications and custom desktop entries are not supported.
+- This initial release has been tried locally. Broader theme, scaling, and
+  multi-monitor coverage is still limited.
+
+## Update and remove
+
+```sh
+omarchy plugin update reinno.default-apps
+omarchy plugin disable reinno.default-apps
+omarchy plugin remove reinno.default-apps
+```
+
+Removing the plugin leaves your chosen defaults in place. Change them using
+Omarchy's settings or commands if needed.
+
+## Local development
+
+```sh
+omarchy plugin validate .
+python3 defaults.py
 mkdir -p ~/.config/omarchy/plugins/reinno.default-apps
 cp manifest.json Panel.qml defaults.py ~/.config/omarchy/plugins/reinno.default-apps/
 omarchy-shell shell rescanPlugins
 omarchy plugin enable reinno.default-apps --section right
 ```
 
-Click the settings icon in the bar. You can also open it with:
+`python3 defaults.py` only reads preferences. Saved plugin changes hot-reload.
+If you previously installed a manual copy, remove that copy with Omarchy's
+plugin removal command before installing the Git-managed version.
 
-```sh
-omarchy-shell reinno.default-apps open
-```
+## License
 
-To disable: `omarchy plugin disable reinno.default-apps`.
-
-## Checks
-
-```sh
-omarchy plugin validate .
-python3 defaults.py
-```
-
-The second command only reads defaults. Manifest validation and local app
-discovery have been checked; the popup still needs an in-session visual check.
+MIT. See [LICENSE](LICENSE).
