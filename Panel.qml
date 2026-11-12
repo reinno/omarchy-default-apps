@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
 import qs.Ui
@@ -58,33 +57,55 @@ Panel {
         Column {
             id: content
             width: parent.width
-            spacing: 12
+            spacing: Style.space(14)
             Keys.onEscapePressed: root.close()
-            Text { text: "Default apps"; color: Commons.Color.foreground; font.pixelSize: 20 }
+            PanelHero {
+                title: "Default apps"
+                meta: "Preferred applications"
+                iconComponent: Component {
+                    Text {
+                        text: "󰒓"
+                        color: Commons.Color.foreground
+                        font.family: Style.font.family
+                        font.pixelSize: Style.font.display
+                    }
+                }
+                trailingControl: Component {
+                    PanelActionButton {
+                        iconText: "󰑐"
+                        tooltipText: "Refresh defaults"
+                        focusable: true
+                        enabled: !worker.running
+                        onClicked: root.refresh([])
+                    }
+                }
+            }
+            PanelSeparator { width: parent.width }
             Repeater {
                 model: root.categories
                 Column {
+                    id: categoryRow
                     required property var modelData
                     width: content.width
-                    spacing: 4
-                    Text {
-                        width: parent.width
-                        text: modelData.category.charAt(0).toUpperCase() + modelData.category.slice(1) + " · " + modelData.current
-                        color: Commons.Color.foreground
-                        elide: Text.ElideRight
+                    spacing: Style.space(6)
+                    PanelSectionHeader {
+                        text: categoryRow.modelData.category.toUpperCase()
                     }
-                    ComboBox {
+                    Dropdown {
+                        id: picker
                         width: parent.width
-                        model: modelData.apps
-                        textRole: "label"
-                        enabled: !worker.running && modelData.apps.length > 0
-                        currentIndex: {
-                            for (var i = 0; i < modelData.apps.length; i++)
-                                if (modelData.apps[i].value === modelData.current) return i
-                            return -1
+                        showLabel: false
+                        options: categoryRow.modelData.apps
+                        value: categoryRow.modelData.current || "Choose an app"
+                        enabled: !worker.running && options.length > 0
+                        opacity: enabled ? 1 : 0.5
+                        onChanged: function(value) {
+                            // The shared dropdown updates its value internally.
+                            // Restore the binding so errors retain the actual default.
+                            picker.value = Qt.binding(function() { return categoryRow.modelData.current || "Choose an app" })
+                            if (value !== categoryRow.modelData.current)
+                                root.refresh([categoryRow.modelData.category, value])
                         }
-                        displayText: currentIndex < 0 ? "Choose an installed app…" : currentText
-                        onActivated: function(index) { root.refresh([modelData.category, modelData.apps[index].value]) }
                     }
                 }
             }
@@ -93,9 +114,12 @@ Panel {
                 visible: text !== ""
                 text: worker.running ? "Loading…" : root.message
                 color: Commons.Color.foreground
+                textFormat: Text.PlainText
+                font.family: Style.font.family
+                font.pixelSize: Style.font.caption
                 wrapMode: Text.Wrap
             }
-            Button { text: "Refresh"; enabled: !worker.running; onClicked: root.refresh([]) }
+
         }
     }
 }
