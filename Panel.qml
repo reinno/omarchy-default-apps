@@ -14,6 +14,33 @@ Panel {
     implicitHeight: button.implicitHeight
     property var categories: []
     property string message: ""
+    property bool configuring: false
+    readonly property var categoryOptions: [
+        {key: "showBrowser", label: "Browser"},
+        {key: "showEditor", label: "Editor"},
+        {key: "showTerminal", label: "Terminal"},
+        {key: "showAgent", label: "Coding agent"},
+        {key: "showFileManager", label: "File manager"}
+    ]
+
+    function saveVisibility(key, value) {
+        if (settingsWriter.running) return
+        message = ""
+        settingsWriter.command = ["omarchy", "bar", "set", root.moduleName,
+                                  key, value ? "true" : "false", "--json"]
+        settingsWriter.running = true
+    }
+
+    Process {
+        id: settingsWriter
+        stderr: StdioCollector {
+            onStreamFinished: if (text.trim()) root.message = text.trim()
+        }
+        onExited: function(code) {
+            if (code !== 0 && !root.message)
+                root.message = "Could not save category settings. Please try again."
+        }
+    }
     readonly property var visibleCategories: {
         var keys = {"browser": "showBrowser", "editor": "showEditor",
                     "terminal": "showTerminal", "agent": "showAgent",
@@ -30,7 +57,10 @@ Panel {
         worker.command = ["python3", helper].concat(args || [])
         worker.running = true
     }
-    onOpenedChanged: if (opened) refresh([])
+    onOpenedChanged: {
+        if (opened) refresh([])
+        else configuring = false
+    }
 
     Process {
         id: worker
@@ -72,10 +102,10 @@ Panel {
             id: content
             width: scroll.availableWidth
             spacing: Style.space(14)
-            Keys.onEscapePressed: root.close()
+            Keys.onEscapePressed: { if (root.configuring) root.configuring = false; else root.close() }
             PanelHero {
-                title: "Default apps"
-                meta: "Preferred applications"
+                title: root.configuring ? "Visible categories" : "Default apps"
+                meta: root.configuring ? "Choose what appears" : "Preferred applications"
                 iconComponent: Component {
                     Text {
                         text: "󰒓"
@@ -85,20 +115,30 @@ Panel {
                     }
                 }
                 trailingControl: Component {
-                    PanelActionButton {
-                        iconText: "󰑐"
-                        tooltipText: "Refresh defaults"
-                        focusable: true
-                        enabled: !worker.running
-                        onClicked: root.refresh([])
+                    Row {
+                        spacing: Style.space(6)
+                        PanelActionButton {
+                            visible: !root.configuring
+                            iconText: "󰑐"
+                            tooltipText: "Refresh defaults"
+                            focusable: true
+                            enabled: !worker.running
+                            onClicked: root.refresh([])
+                        }
+                        PanelActionButton {
+                            iconText: root.configuring ? "󰁍" : "󰒓"
+                            tooltipText: root.configuring ? "Back to defaults" : "Choose visible categories"
+                            focusable: true
+                            onClicked: root.configuring = !root.configuring
+                        }
                     }
                 }
             }
             PanelSeparator { width: parent.width }
             Text {
                 width: parent.width
-                visible: root.visibleCategories.length === 0 && !worker.running && root.message === ""
-                text: "No categories shown. Enable categories in this widget’s settings."
+                visible: !root.configuring && root.visibleCategories.length === 0 && !worker.running && root.message === ""
+                text: "No categories shown. Use the settings button above to enable categories."
                 textFormat: Text.PlainText
                 color: Commons.Color.foreground
                 font.family: Style.font.family
@@ -106,7 +146,19 @@ Panel {
                 wrapMode: Text.Wrap
             }
             Repeater {
-                model: root.visibleCategories
+                model: root.configuring ? root.categoryOptions : []
+                Toggle {
+                    required property var modelData
+                    width: content.width
+                    label: modelData.label
+                    checked: root.setting(modelData.key, true) !== false
+                    enabled: !settingsWriter.running
+                    opacity: enabled ? 1 : 0.5
+                    onClicked: root.saveVisibility(modelData.key, !checked)
+                }
+            }
+            Repeater {
+                model: root.configuring ? [] : root.visibleCategories
                 Column {
                     id: categoryRow
                     required property var modelData
@@ -136,7 +188,7 @@ Panel {
             Text {
                 width: parent.width
                 visible: text !== ""
-                text: worker.running ? "Loading…" : root.message
+                text: settingsWriter.running ? "Saving…" : (worker.running ? "Loading…" : root.message)
                 color: Commons.Color.foreground
                 textFormat: Text.PlainText
                 font.family: Style.font.family

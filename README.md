@@ -95,7 +95,11 @@ backup. The preview currently shows the earlier four-category panel.
 
 ## Choose visible categories
 
-The widget settings expose five toggles: Browser, Editor, Terminal, Coding
+Click the settings icon in the panel header to open **Visible categories**.
+Toggle categories there; changes save immediately. Use the back arrow or
+Escape to return to the app selectors. No defaults are changed.
+
+The same widget settings expose five toggles: Browser, Editor, Terminal, Coding
 agent, and File manager. All are shown by default. Hiding a category changes
 only the panel; its default app remains untouched. Turning every category off
 shows an explanatory empty state.
