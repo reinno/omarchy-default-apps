@@ -1,15 +1,22 @@
 # Default Apps for Omarchy
 
-A native Omarchy bar panel for choosing your default browser, editor,
-terminal, coding agent, and file manager. Uses Omarchy's themed controls and follows the
-active shell theme. Defaults change only when you select an application.
+Choose your default browser, editor, terminal, coding agent, and file manager
+from a native Omarchy bar panel. The controls follow your active shell theme,
+and you can choose which categories appear.
+
+**Your defaults change only when you select a different application.**
+Enabling, opening, refreshing, disabling, or removing the plugin does not
+change them.
 
 ![Default Apps panel with five app categories](preview.png)
 
 ## Requirements
 
-Omarchy Quattro with its Quickshell plugin system, the shared `qs.Ui`
-components, `omarchy default browser/editor/terminal/agent`, Python 3, and xdg-utils.
+- Omarchy Quattro with the Quickshell plugin system and shared `qs.Ui` controls.
+- Omarchy's `default browser`, `default editor`, `default terminal`, and
+  `default agent` commands.
+- Python 3 and xdg-utils.
+
 Older Waybar-based Omarchy releases are not supported.
 
 ## Install
@@ -18,68 +25,87 @@ Older Waybar-based Omarchy releases are not supported.
 omarchy plugin add https://github.com/reinno/omarchy-default-apps --enable
 ```
 
-Click the settings icon in the bar. To move it:
+If you previously installed a manual copy, remove it with
+`omarchy plugin remove reinno.default-apps` before installing the Git-managed
+version. Your chosen default apps remain unchanged.
+
+Click the settings icon in the bar to open the panel. To place it on the right:
 
 ```sh
 omarchy bar move reinno.default-apps --section right
 ```
 
-Reopen the panel or use its refresh icon to detect external changes.
-Tab focuses controls; Enter opens a dropdown, arrow keys choose an option,
-and Escape closes it.
+## Use the panel
 
-## Behavior and limitations
+Select an application to make it the default. Changes apply immediately.
+Reopen the panel or click its refresh icon to read changes made elsewhere.
 
-- Browser and terminal selections use Omarchy's default commands and their
-  configuration behavior. The terminal command replaces the terminal
-  preference list with the selected terminal.
-- Editor selection controls `omarchy launch editor`, not every document
-  MIME association.
-- Agent selection writes `~/.config/omarchy/defaults/agent` atomically. It
-  does not call the setter that would install or launch an agent.
-- Choices are supported commands found on PATH. Agent launcher wrappers may
-  appear even when their underlying runtime has not been installed.
-- Browser/editor/terminal choices do not support Flatpak-only applications or custom entries. File managers are discovered from XDG desktop entries advertising `inode/directory`, including custom entries.
-- File-manager selection changes only the folder association; existing keyboard shortcuts remain untouched.
-- This initial release has been tried locally. Broader theme, scaling, and
-  multi-monitor coverage is still limited.
+Use Tab to focus controls, Enter to open a dropdown, and arrow keys to navigate
+its options. Press Enter to select or Escape to dismiss it.
 
-## Update and remove
+### Choose visible categories
 
-```sh
-omarchy plugin update reinno.default-apps
-omarchy plugin disable reinno.default-apps
-omarchy plugin remove reinno.default-apps
-```
+Click the settings icon **inside the panel header** to open **Visible categories**.
+Toggle categories there; changes save immediately. Use the back arrow or
+Escape to return to the app selectors.
 
-Removing the plugin leaves your chosen defaults in place. Change them using
-Omarchy's settings or commands if needed.
+![Visible categories settings panel](settings-preview.png)
 
-## Local development
+All five categories are visible by default. Hiding a category only hides its
+selector; it does not change the default app. You can hide every category and
+still use the settings button to bring them back.
+
+The same options are available in Omarchy's widget settings and from the CLI:
 
 ```sh
-omarchy plugin validate .
-python3 defaults.py
-mkdir -p ~/.config/omarchy/plugins/reinno.default-apps
-cp manifest.json Panel.qml defaults.py ~/.config/omarchy/plugins/reinno.default-apps/
-omarchy-shell shell rescanPlugins
-omarchy plugin enable reinno.default-apps --section right
+omarchy bar set reinno.default-apps showAgent false --json
+omarchy bar set reinno.default-apps showFileManager false --json
 ```
 
-`python3 defaults.py` only reads preferences. Saved plugin changes hot-reload.
-If you previously installed a manual copy, remove that copy with Omarchy's
-plugin removal command before installing the Git-managed version.
+| Category | Setting key |
+| --- | --- |
+| Browser | `showBrowser` |
+| Editor | `showEditor` |
+| Terminal | `showTerminal` |
+| Coding agent | `showAgent` |
+| File manager | `showFileManager` |
 
-## License
+Use `true` to show a category again. These settings are stored in Omarchy's
+bar configuration and survive plugin updates.
 
-MIT. See [LICENSE](LICENSE).
+## What each selection changes
 
-## Optional file-manager shortcuts
+| Category | Behavior |
+| --- | --- |
+| Browser | Uses Omarchy's default-browser command to update browser handlers. |
+| Editor | Sets the editor used by `omarchy launch editor`; document associations are unchanged. |
+| Terminal | Uses Omarchy's default-terminal command, which replaces the terminal preference list with the selected terminal. |
+| Coding agent | Saves `~/.config/omarchy/defaults/agent` without installing or launching an agent. |
+| File manager | Sets the `inode/directory` folder association; existing keyboard shortcuts are unchanged. |
+
+Browser, editor, terminal, and agent choices are supported commands found on
+PATH. Agent launcher wrappers can appear even when the underlying runtime has
+not been installed. Flatpak-only applications and custom entries are not
+supported for these categories.
+
+File managers are discovered from XDG desktop entries that advertise
+`inode/directory`, including custom entries.
+
+The plugin has been tried locally. Coverage across themes, display scaling,
+and multiple monitors is still limited.
+
+### Optional file-manager shortcuts
 
 Omarchy's stock Super+Shift+F and Super+Alt+Shift+F shortcuts launch Nautilus.
-To make them follow the folder default, first inspect your existing bindings
-with `omarchy menu keybindings --print`. If you want to replace them, add the
-following to `~/.config/hypr/bindings.lua` (back up that file first):
+The plugin does not edit these bindings. To make them follow your folder
+default, first inspect your current bindings:
+
+```sh
+omarchy menu keybindings --print
+```
+
+Back up `~/.config/hypr/bindings.lua`, then add the following if you want to
+replace the actions currently assigned to those keys:
 
 ```lua
 hl.unbind("SUPER + SHIFT + F")
@@ -88,31 +114,61 @@ hl.unbind("SUPER + ALT + SHIFT + F")
 o.bind("SUPER + ALT + SHIFT + F", "Default file manager (cwd)", [[xdg-open "$(omarchy-cmd-terminal-cwd)"]])
 ```
 
-Run `hyprctl reload` and `hyprctl configerrors` after editing. These optional
-bindings replace any custom actions on those keys. The plugin never edits
-Hyprland configuration. To undo, remove the added bindings and restore your
-backup.
-
-## Choose visible categories
-
-![Visible categories settings panel](settings-preview.png)
-
-Click the settings icon in the panel header to open **Visible categories**.
-Toggle categories there; changes save immediately. Use the back arrow or
-Escape to return to the app selectors. No defaults are changed.
-
-The same widget settings expose five toggles: Browser, Editor, Terminal, Coding
-agent, and File manager. All are shown by default. Hiding a category changes
-only the panel; its default app remains untouched. Turning every category off
-shows an explanatory empty state.
-
-You can also configure them from the terminal:
+Apply and check the configuration:
 
 ```sh
-omarchy bar set reinno.default-apps showAgent false --json
-omarchy bar set reinno.default-apps showFileManager false --json
+hyprctl reload
+hyprctl configerrors
 ```
 
-Use `true` to show them again. The other keys are `showBrowser`, `showEditor`,
-and `showTerminal`. These settings live in Omarchy's bar configuration and
-survive plugin updates.
+To undo this integration, restore your backed-up bindings and reload Hyprland.
+
+## Update, disable, or remove
+
+Update a Git-managed installation:
+
+```sh
+omarchy plugin update reinno.default-apps
+```
+
+Hide the plugin without removing it:
+
+```sh
+omarchy plugin disable reinno.default-apps
+```
+
+Remove it:
+
+```sh
+omarchy plugin remove reinno.default-apps
+```
+
+Your chosen default apps remain in place after disabling or removing the
+plugin. Optional file-manager keybindings also remain until you remove them.
+
+## Local development
+
+From a checkout of this repository, validate the manifest and read current
+defaults:
+
+```sh
+omarchy plugin validate .
+python3 defaults.py
+```
+
+Neither command changes default apps. To install a local copy:
+
+```sh
+mkdir -p ~/.config/omarchy/plugins/reinno.default-apps
+cp manifest.json Panel.qml defaults.py ~/.config/omarchy/plugins/reinno.default-apps/
+omarchy-shell shell rescanPlugins
+omarchy plugin enable reinno.default-apps --section right
+```
+
+After editing files in the checkout, copy them into the plugin directory again.
+Omarchy hot-reloads changes saved there. Use `rescanPlugins` after changing the
+manifest if the updated metadata is not picked up.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
