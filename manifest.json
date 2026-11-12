@@ -7,5 +7,5 @@
   "description": "Switch the default browser, editor, and terminal.",
   "kinds": ["bar-widget"],
   "entryPoints": {"barWidget": "Panel.qml"},
-  "barWidget": {"displayName": "Default Apps", "category": "System", "allowMultiple": false}
+  "barWidget": {"displayName": "Default Apps", "category": "System", "defaultSection": "right", "allowMultiple": false}
 }
