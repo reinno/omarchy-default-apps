@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "reinno.default-apps",
   "name": "Default Apps",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "reinno",
   "description": "Switch the default browser, editor, terminal, coding agent, and file manager.",
   "kinds": [
@@ -15,7 +15,44 @@
     "displayName": "Default Apps",
     "category": "System",
     "defaultSection": "right",
-    "allowMultiple": false
+    "allowMultiple": false,
+    "schema": [
+      {
+        "key": "showBrowser",
+        "type": "boolean",
+        "label": "Browser",
+        "description": "Show the browser selector.",
+        "defaultValue": true
+      },
+      {
+        "key": "showEditor",
+        "type": "boolean",
+        "label": "Editor",
+        "description": "Show the editor selector.",
+        "defaultValue": true
+      },
+      {
+        "key": "showTerminal",
+        "type": "boolean",
+        "label": "Terminal",
+        "description": "Show the terminal selector.",
+        "defaultValue": true
+      },
+      {
+        "key": "showAgent",
+        "type": "boolean",
+        "label": "Coding agent",
+        "description": "Show the coding agent selector.",
+        "defaultValue": true
+      },
+      {
+        "key": "showFileManager",
+        "type": "boolean",
+        "label": "File manager",
+        "description": "Show the file manager selector.",
+        "defaultValue": true
+      }
+    ]
   },
   "license": "MIT"
 }

@@ -92,3 +92,21 @@ Run `hyprctl reload` and `hyprctl configerrors` after editing. These optional
 bindings replace any custom actions on those keys. The plugin never edits
 Hyprland configuration. To undo, remove the added bindings and restore your
 backup. The preview currently shows the earlier four-category panel.
+
+## Choose visible categories
+
+The widget settings expose five toggles: Browser, Editor, Terminal, Coding
+agent, and File manager. All are shown by default. Hiding a category changes
+only the panel; its default app remains untouched. Turning every category off
+shows an explanatory empty state.
+
+You can also configure them from the terminal:
+
+```sh
+omarchy bar set reinno.default-apps showAgent false --json
+omarchy bar set reinno.default-apps showFileManager false --json
+```
+
+Use `true` to show them again. The other keys are `showBrowser`, `showEditor`,
+and `showTerminal`. These settings live in Omarchy's bar configuration and
+survive plugin updates.

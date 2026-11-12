@@ -14,6 +14,14 @@ Panel {
     implicitHeight: button.implicitHeight
     property var categories: []
     property string message: ""
+    readonly property var visibleCategories: {
+        var keys = {"browser": "showBrowser", "editor": "showEditor",
+                    "terminal": "showTerminal", "agent": "showAgent",
+                    "file manager": "showFileManager"}
+        return categories.filter(function(category) {
+            return root.setting(keys[category.category], true) !== false
+        })
+    }
     readonly property string helper: decodeURIComponent(Qt.resolvedUrl("defaults.py").toString().replace(/^file:\/\//, ""))
 
     function refresh(args) {
@@ -87,8 +95,18 @@ Panel {
                 }
             }
             PanelSeparator { width: parent.width }
+            Text {
+                width: parent.width
+                visible: root.visibleCategories.length === 0 && !worker.running && root.message === ""
+                text: "No categories shown. Enable categories in this widget’s settings."
+                textFormat: Text.PlainText
+                color: Commons.Color.foreground
+                font.family: Style.font.family
+                font.pixelSize: Style.font.body
+                wrapMode: Text.Wrap
+            }
             Repeater {
-                model: root.categories
+                model: root.visibleCategories
                 Column {
                     id: categoryRow
                     required property var modelData
