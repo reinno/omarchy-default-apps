@@ -19,6 +19,7 @@ From this directory:
 ```sh
 mkdir -p ~/.config/omarchy/plugins/reinno.default-apps
 cp manifest.json Panel.qml defaults.py ~/.config/omarchy/plugins/reinno.default-apps/
+omarchy-shell shell rescanPlugins
 omarchy plugin enable reinno.default-apps
 omarchy bar put reinno.default-apps --section right
 ```
